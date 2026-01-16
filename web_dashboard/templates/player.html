@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player - Surveillance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+        
+        body {
+            background-color: #121212;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+        }
+        
+        .video-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        
+        .video-header {
+            background: var(--primary-color);
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .video-title {
+            margin: 0;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .video-meta {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        #main-video-player {
+            width: 100%;
+            height: auto;
+            background: #000;
+        }
+        
+        .controls-container {
+            padding: 20px;
+            background: #2a2a2a;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+        
+        .btn-control {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            margin-right: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-control:hover {
+            background: #555;
+        }
+        
+        .btn-control.active {
+            background: var(--secondary-color);
+        }
+        
+        .btn-control.danger {
+            background: var(--accent-color);
+        }
+        
+        .btn-control.danger:hover {
+            background: #c0392b;
+        }
+        
+        .time-display {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .time-stamp {
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .speed-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .speed-btn {
+            background: #444;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .speed-btn.active {
+            background: var(--secondary-color);
+        }
+        
+        .timeline-container {
+            padding: 0 20px 20px;
+            background: #2a2a2a;
+        }
+        
+        .timeline-markers {
+            height: 20px;
+            background: #333;
+            position: relative;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            width: 3px;
+            height: 20px;
+            background: var(--secondary-color);
+            cursor: pointer;
+        }
+        
+        .timeline-marker:hover::after {
+            content: attr(data-time);
+            position: absolute;
+            top: -25px;
+            left: -20px;
+            background: #000;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .video-info-panel {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+        }
+        
+        .snapshot-gallery {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+        
+        .snapshot-thumb {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .snapshot-thumb:hover {
+            opacity: 0.8;
+        }
+        
+        .back-button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-button:hover {
+            background: #555;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .bookmark-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .bookmark-btn:hover {
+            background: #e67e22;
+        }
+        
+        .clip-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .clip-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .clip-btn:hover {
+            background: #229954;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #444;
+            border-top-color: var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: var(--accent-color);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .zoom-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        @media (max-width: 768px) {
+            .video-container {
+                margin: 10px;
+                border-radius: 0;
+            }
+            
+            .controls-container {
+                padding: 10px;
+            }
+            
+            .clip-controls {
+                flex-wrap: wrap;
+            }
+            
+            .btn-control {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <div style="margin-left: 20px; color: white;">Loading video...</div>
+    </div>
+    
+    <!-- Error Message -->
+    <div id="error-message" class="error-message" style="display: none;"></div>
+    
+    <!-- Main Container -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Video Player Section -->
+            <div class="col-lg-9 col-md-12">
+                <div class="video-container">
+                    <!-- Video Header -->
+                    <div class="video-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="video-title" id="video-title">Loading...</h1>
+                            <div class="video-meta">
+                                <span id="video-camera">Camera: Unknown</span> • 
+                                <span id="video-date">Date: Loading...</span> • 
+                                <span id="video-duration">Duration: Loading...</span>
+                            </div>
+                        </div>
+                        <a href="/" class="back-button">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    
+                    <!-- Video Player -->
+                    <div style="position: relative;">
+                        <video id="main-video-player" controls crossorigin playsinline>
+                            Your browser does not support the video tag.
+                        </video>
+                        
+                        <!-- Zoom Controls -->
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomVideo('in')">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="zoom-btn" onclick="zoomVideo('out')">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button class="zoom-btn" onclick="zoomVideo('reset')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Player Controls -->
+                    <div class="controls-container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="control-group">
+                                    <div class="control-label">Playback Controls</div>
+                                    <div>
+                                        <button class="btn-control" onclick="playPause()">
+                                            <i class="fas fa-play"></i> Play/Pause
+                                        </button>
+                                        <button class="btn-control" onclick="skipBackward()">
+                                            <i class="fas fa-backward"></i> -10s
+                                        </button>
+                                        <button class="btn-control" onclick="skipForward()">
+                                            <i class="fas fa-forward"></i> +10s
+                                        </button>
+                                        <button class="btn-control" onclick="toggleMute()">
+                                            <i class="fas fa-volume-up"></i> Mute
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <div class="control-label">Playback Speed</div>
+                                    <div class="speed-controls">
+                                        <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                                        <button class="speed-btn active" onclick="setSpeed(1)">1x</button>
+                                        <button class="speed-btn" onclick="setSpeed(1.5)">1.5x</button>
+                                        <button class="speed-btn" onclick="setSpeed(2)">2x</button>
+                                        <button class="speed-btn" onclick="setSpeed(4)">4x</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="control-group">
+                                    <div class="control-label">Video Actions</div>
+                                    <div class="clip-controls">
+                                        <button class="clip-btn" onclick="createClip()">
+                                            <i class="fas fa-cut"></i> Create Clip
+                                        </button>
+                                        <button class="bookmark-btn" onclick="addBookmark()">
+                                            <i class="fas fa-bookmark"></i> Bookmark
+                                        </button>
+                                        <button class="btn-control" onclick="takeSnapshot()">
+                                            <i class="fas fa-camera"></i> Snapshot
+                                        </button>
+                                        <button class="btn-control" onclick="downloadVideo()">
+                                            <i class="fas fa-download"></i> Download
+                                        </button>
+                                        <button class="btn-control danger" onclick="deleteVideo()">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <div class="time-display">
+                                        <div class="control-label">Current Time</div>
+                                        <div class="time-stamp" id="current-time">00:00:00</div>
+                                        <input type="range" id="time-slider" min="0" max="100" value="0" 
+                                               style="width: 100%;" oninput="seekVideo(this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline with Markers -->
+                    <div class="timeline-container">
+                        <div class="control-label">Timeline</div>
+                        <div class="timeline-markers" id="timeline-markers">
+                            <!-- Motion markers will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar Info Panel -->
+            <div class="col-lg-3 col-md-12">
+                <div class="video-info-panel">
+                    <h5><i class="fas fa-info-circle"></i> Video Information</h5>
+                    
+                    <div class="info-item">
+                        <div class="info-label">File Name</div>
+                        <div class="info-value" id="info-filename">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">File Size</div>
+                        <div class="info-value" id="info-filesize">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Resolution</div>
+                        <div class="info-value" id="info-resolution">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Frame Rate</div>
+                        <div class="info-value" id="info-framerate">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Codec</div>
+                        <div class="info-value" id="info-codec">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Motion Events</div>
+                        <div class="info-value" id="info-motion-count">0</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Created</div>
+                        <div class="info-value" id="info-created">-</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">Related Recordings</div>
+                        <div id="related-recordings">
+                            <small>Loading...</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Snapshots Gallery -->
+                <div class="video-info-panel mt-3">
+                    <h5><i class="fas fa-images"></i> Snapshots</h5>
+                    <div class="snapshot-gallery" id="snapshot-gallery">
+                        <!-- Snapshots will be loaded here -->
+                    </div>
+                    <button class="btn-control" onclick="takeSnapshot()" style="width: 100%; margin-top: 10px;">
+                        <i class="fas fa-camera"></i> Take New Snapshot
+                    </button>
+                </div>
+                
+                <!-- Bookmarks -->
+                <div class="video-info-panel mt-3">
+                    <h5><i class="fas fa-bookmark"></i> Bookmarks</h5>
+                    <div id="bookmarks-list">
+                        <small>No bookmarks yet</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.js"></script>
+    
+    <script>
+        // Global variables
+        let videoPlayer;
+        let currentVideoInfo = {};
+        let bookmarks = [];
+        let snapshots = [];
+        let motionEvents = [];
+        let socket = io();
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVideoPlayer();
+            loadVideoInfo();
+            setupSocketIO();
+            setupEventListeners();
+        });
+        
+        function loadVideoPlayer() {
+            // Get video filename from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            if (!filename) {
+                showError('No video specified in URL');
+                return;
+            }
+            
+            // Show loading
+            showLoading(true);
+            
+            // Initialize Plyr player
+            videoPlayer = new Plyr('#main-video-player', {
+                controls: [
+                    'play-large',
+                    'play',
+                    'progress',
+                    'current-time',
+                    'duration',
+                    'mute',
+                    'volume',
+                    'settings',
+                    'fullscreen'
+                ],
+                settings: ['quality', 'speed'],
+                speed: {
+                    selected: 1,
+                    options: [0.5, 1, 1.5, 2, 4]
+                }
+            });
+            
+            // Set video source
+            videoPlayer.source = {
+                type: 'video',
+                title: filename,
+                sources: [{
+                    src: `/api/play/${filename}`,
+                    type: 'video/mp4'
+                }]
+            };
+            
+            // Update title
+            document.getElementById('video-title').textContent = filename;
+            
+            // Listen for player events
+            videoPlayer.on('ready', function() {
+                showLoading(false);
+                updateVideoInfo();
+                loadMotionEvents(filename);
+            });
+            
+            videoPlayer.on('timeupdate', function() {
+                updateCurrentTime();
+            });
+            
+            videoPlayer.on('error', function(error) {
+                showError('Error loading video: ' + error.detail.message);
+                showLoading(false);
+            });
+        }
+        
+        function loadVideoInfo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            if (!filename) return;
+            
+            fetch(`/api/video-info/${filename}`)
+                .then(response => response.json())
+                .then(data => {
+                    currentVideoInfo = data;
+                    updateVideoInfoDisplay(data);
+                    updateRelatedRecordings(data.camera);
+                })
+                .catch(error => {
+                    console.error('Error loading video info:', error);
+                });
+        }
+        
+        function updateVideoInfoDisplay(info) {
+            // Update main display
+            document.getElementById('video-camera').textContent = `Camera: ${info.camera || 'Unknown'}`;
+            document.getElementById('video-date').textContent = `Date: ${formatDate(info.created)}`;
+            document.getElementById('video-duration').textContent = `Duration: ${formatDuration(info.duration)}`;
+            
+            // Update info panel
+            document.getElementById('info-filename').textContent = info.filename || '-';
+            document.getElementById('info-filesize').textContent = info.size ? formatFileSize(info.size) : '-';
+            document.getElementById('info-resolution').textContent = info.resolution || '-';
+            document.getElementById('info-framerate').textContent = info.framerate ? `${info.framerate} FPS` : '-';
+            document.getElementById('info-codec').textContent = info.codec || '-';
+            document.getElementById('info-motion-count').textContent = info.motion_events || 0;
+            document.getElementById('info-created').textContent = formatDate(info.created);
+        }
+        
+        function updateVideoInfo() {
+            if (!videoPlayer) return;
+            
+            const video = videoPlayer.media;
+            const info = {
+                duration: video.duration,
+                currentTime: video.currentTime,
+                volume: video.volume,
+                muted: video.muted,
+                playbackRate: video.playbackRate
+            };
+            
+            // Update time display
+            const timeSlider = document.getElementById('time-slider');
+            if (video.duration) {
+                timeSlider.max = video.duration;
+                timeSlider.value = video.currentTime;
+            }
+        }
+        
+        function updateCurrentTime() {
+            if (!videoPlayer || !videoPlayer.currentTime) return;
+            
+            const currentTime = videoPlayer.currentTime;
+            const formattedTime = formatTime(currentTime);
+            document.getElementById('current-time').textContent = formattedTime;
+            
+            // Update slider
+            const timeSlider = document.getElementById('time-slider');
+            if (videoPlayer.duration) {
+                const percentage = (currentTime / videoPlayer.duration) * 100;
+                timeSlider.value = currentTime;
+            }
+        }
+        
+        function loadMotionEvents(filename) {
+            fetch(`/api/motion-events/${filename}`)
+                .then(response => response.json())
+                .then(events => {
+                    motionEvents = events;
+                    renderTimelineMarkers(events);
+                })
+                .catch(error => {
+                    console.error('Error loading motion events:', error);
+                });
+        }
+        
+        function renderTimelineMarkers(events) {
+            const timeline = document.getElementById('timeline-markers');
+            timeline.innerHTML = '';
+            
+            if (!videoPlayer || !videoPlayer.duration || events.length === 0) {
+                timeline.innerHTML = '<div style="padding: 5px; color: #aaa;">No motion events detected</div>';
+                return;
+            }
+            
+            const duration = videoPlayer.duration;
+            
+            events.forEach(event => {
+                if (event.timestamp <= duration) {
+                    const position = (event.timestamp / duration) * 100;
+                    const marker = document.createElement('div');
+                    marker.className = 'timeline-marker';
+                    marker.style.left = `${position}%`;
+                    marker.title = `Motion at ${formatTime(event.timestamp)}`;
+                    marker.setAttribute('data-time', formatTime(event.timestamp));
+                    marker.onclick = () => seekToTime(event.timestamp);
+                    timeline.appendChild(marker);
+                }
+            });
+        }
+        
+        function updateRelatedRecordings(cameraName) {
+            if (!cameraName) return;
+            
+            fetch(`/api/recordings?camera=${cameraName}&limit=5`)
+                .then(response => response.json())
+                .then(recordings => {
+                    const container = document.getElementById('related-recordings');
+                    if (recordings.length === 0) {
+                        container.innerHTML = '<small>No related recordings</small>';
+                        return;
+                    }
+                    
+                    container.innerHTML = recordings.map(rec => `
+                        <div style="margin-bottom: 5px; padding: 5px; background: #333; border-radius: 3px;">
+                            <small>${formatDate(rec.created)} - ${formatDuration(rec.duration)}</small><br>
+                            <a href="/player.html?video=${rec.filename}" style="color: var(--secondary-color); font-size: 12px;">
+                                ${rec.filename}
+                            </a>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading related recordings:', error);
+                });
+        }
+        
+        function loadSnapshots() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            fetch(`/api/snapshots/${filename}`)
+                .then(response => response.json())
+                .then(images => {
+                    snapshots = images;
+                    renderSnapshots(images);
+                })
+                .catch(error => {
+                    console.error('Error loading snapshots:', error);
+                });
+        }
+        
+        function renderSnapshots(images) {
+            const gallery = document.getElementById('snapshot-gallery');
+            
+            if (images.length === 0) {
+                gallery.innerHTML = '<small>No snapshots yet</small>';
+                return;
+            }
+            
+            gallery.innerHTML = images.map((img, index) => `
+                <img src="${img.thumbnail}" class="snapshot-thumb" 
+                     onclick="showSnapshot('${img.full_url || img.thumbnail}')"
+                     title="Snapshot at ${formatTime(img.timestamp)}">
+            `).join('');
+        }
+        
+        function loadBookmarks() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            // Load bookmarks from localStorage
+            const storedBookmarks = localStorage.getItem(`bookmarks_${filename}`);
+            if (storedBookmarks) {
+                bookmarks = JSON.parse(storedBookmarks);
+                renderBookmarks();
+            }
+        }
+        
+        function renderBookmarks() {
+            const container = document.getElementById('bookmarks-list');
+            
+            if (bookmarks.length === 0) {
+                container.innerHTML = '<small>No bookmarks yet</small>';
+                return;
+            }
+            
+            container.innerHTML = bookmarks.map((bookmark, index) => `
+                <div style="margin-bottom: 5px; padding: 5px; background: #333; border-radius: 3px;">
+                    <div style="font-size: 12px;">
+                        <strong>${formatTime(bookmark.time)}</strong>
+                        <button onclick="removeBookmark(${index})" style="float: right; background: none; border: none; color: #e74c3c; cursor: pointer;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div style="font-size: 11px; color: #aaa;">${bookmark.note || 'No note'}</div>
+                    <button onclick="seekToTime(${bookmark.time})" style="background: #444; border: none; color: white; padding: 2px 8px; border-radius: 3px; font-size: 11px; cursor: pointer;">
+                        Go to
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // Player Control Functions
+        function playPause() {
+            if (videoPlayer.playing) {
+                videoPlayer.pause();
+            } else {
+                videoPlayer.play();
+            }
+        }
+        
+        function skipBackward() {
+            if (videoPlayer.currentTime > 10) {
+                videoPlayer.currentTime -= 10;
+            } else {
+                videoPlayer.currentTime = 0;
+            }
+        }
+        
+        function skipForward() {
+            if (videoPlayer.currentTime < videoPlayer.duration - 10) {
+                videoPlayer.currentTime += 10;
+            } else {
+                videoPlayer.currentTime = videoPlayer.duration;
+            }
+        }
+        
+        function toggleMute() {
+            videoPlayer.muted = !videoPlayer.muted;
+        }
+        
+        function setSpeed(speed) {
+            videoPlayer.speed = speed;
+            
+            // Update button states
+            document.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function seekVideo(value) {
+            if (videoPlayer && videoPlayer.duration) {
+                const time = (value / 100) * videoPlayer.duration;
+                videoPlayer.currentTime = time;
+            }
+        }
+        
+        function seekToTime(time) {
+            if (videoPlayer) {
+                videoPlayer.currentTime = time;
+            }
+        }
+        
+        function zoomVideo(direction) {
+            const video = document.getElementById('main-video-player');
+            
+            switch(direction) {
+                case 'in':
+                    video.style.transform = 'scale(1.5)';
+                    video.style.transformOrigin = 'center center';
+                    break;
+                case 'out':
+                    video.style.transform = 'scale(1)';
+                    break;
+                case 'reset':
+                    video.style.transform = 'scale(1)';
+                    video.style.transformOrigin = 'center center';
+                    break;
+            }
+        }
+        
+        function takeSnapshot() {
+            if (!videoPlayer) return;
+            
+            const canvas = document.createElement('canvas');
+            const video = videoPlayer.media;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert to data URL
+            const dataURL = canvas.toDataURL('image/jpeg');
+            
+            // Add to snapshots
+            const snapshot = {
+                timestamp: videoPlayer.currentTime,
+                data: dataURL,
+                thumbnail: dataURL // In production, this would be uploaded to server
+            };
+            
+            snapshots.push(snapshot);
+            renderSnapshots(snapshots);
+            
+            // Save snapshot to server (optional)
+            saveSnapshotToServer(dataURL, videoPlayer.currentTime);
+        }
+        
+        function saveSnapshotToServer(dataURL, timestamp) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            fetch('/api/save-snapshot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    video: filename,
+                    snapshot: dataURL,
+                    timestamp: timestamp,
+                    time: formatTime(timestamp)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Snapshot saved:', data);
+            })
+            .catch(error => {
+                console.error('Error saving snapshot:', error);
+            });
+        }
+        
+        function showSnapshot(imageUrl) {
+            // Open image in new tab or modal
+            window.open(imageUrl, '_blank');
+        }
+        
+        function addBookmark() {
+            if (!videoPlayer) return;
+            
+            const timestamp = videoPlayer.currentTime;
+            const note = prompt('Add a note for this bookmark (optional):');
+            
+            const bookmark = {
+                time: timestamp,
+                note: note || '',
+                created: new Date().toISOString()
+            };
+            
+            bookmarks.push(bookmark);
+            
+            // Save to localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            localStorage.setItem(`bookmarks_${filename}`, JSON.stringify(bookmarks));
+            
+            renderBookmarks();
+        }
+        
+        function removeBookmark(index) {
+            bookmarks.splice(index, 1);
+            
+            // Save to localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            localStorage.setItem(`bookmarks_${filename}`, JSON.stringify(bookmarks));
+            
+            renderBookmarks();
+        }
+        
+        function createClip() {
+            if (!videoPlayer) return;
+            
+            const startTime = prompt('Enter start time (seconds):', Math.max(0, videoPlayer.currentTime - 30));
+            const endTime = prompt('Enter end time (seconds):', Math.min(videoPlayer.duration, videoPlayer.currentTime + 30));
+            
+            if (!startTime || !endTime) return;
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            showLoading(true);
+            
+            fetch('/api/create-clip', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    video: filename,
+                    start: parseFloat(startTime),
+                    end: parseFloat(endTime)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.success) {
+                    alert(`Clip created: ${data.filename}`);
+                    // Optionally redirect to the new clip
+                    // window.location.href = `/player.html?video=${data.filename}`;
+                } else {
+                    alert('Error creating clip: ' + data.error);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                alert('Error creating clip: ' + error.message);
+            });
+        }
+        
+        function downloadVideo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            window.open(`/api/download/${filename}`, '_blank');
+        }
+        
+        function deleteVideo() {
+            if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+                return;
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('video');
+            
+            fetch(`/api/delete/${filename}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Video deleted successfully');
+                    window.location.href = '/';
+                } else {
+                    alert('Error deleting video: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error deleting video: ' + error.message);
+            });
+        }
+        
+        // Socket.IO Setup
+        function setupSocketIO() {
+            socket.on('connect', function() {
+                console.log('Connected to server');
+            });
+            
+            socket.on('disconnect', function() {
+                console.log('Disconnected from server');
+            });
+            
+            socket.on('video_update', function(data) {
+                console.log('Video update received:', data);
+            });
+        }
+        
+        // Event Listeners
+        function setupEventListeners() {
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(event) {
+                switch(event.key) {
+                    case ' ':
+                    case 'Spacebar':
+                        event.preventDefault();
+                        playPause();
+                        break;
+                    case 'ArrowLeft':
+                        event.preventDefault();
+                        skipBackward();
+                        break;
+                    case 'ArrowRight':
+                        event.preventDefault();
+                        skipForward();
+                        break;
+                    case 'm':
+                    case 'M':
+                        event.preventDefault();
+                        toggleMute();
+                        break;
+                    case 'f':
+                    case 'F':
+                        event.preventDefault();
+                        videoPlayer.fullscreen.toggle();
+                        break;
+                    case 's':
+                    case 'S':
+                        event.preventDefault();
+                        takeSnapshot();
+                        break;
+                    case 'b':
+                    case 'B':
+                        event.preventDefault();
+                        addBookmark();
+                        break;
+                }
+            });
+            
+            // Resize handling
+            window.addEventListener('resize', function() {
+                // Handle any responsive adjustments
+            });
+        }
+        
+        // Utility Functions
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hrs > 0) {
+                return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+        
+        function formatDuration(seconds) {
+            if (!seconds) return 'Unknown';
+            return formatTime(seconds);
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading-overlay').style.display = show ? 'flex' : 'none';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Load additional data
+        loadSnapshots();
+        loadBookmarks();
+    </script>
+</body>
+</html>

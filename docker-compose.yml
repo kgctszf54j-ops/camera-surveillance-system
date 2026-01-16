@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  surveillance:
+    build: .
+    container_name: camera-surveillance
+    restart: unless-stopped
+    volumes:
+      - ./recordings:/app/recordings
+      - ./logs:/app/logs
+      - ./src/config.yaml:/app/src/config.yaml
+      - /dev/video0:/dev/video0
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=Europe/Berlin
+    ports:
+      - "5000:5000"
+    networks:
+      - surveillance-net
+
+  dashboard:
+    build: 
+      context: ./web_dashboard
+      dockerfile: Dockerfile.dashboard
+    container_name: surveillance-dashboard
+    restart: unless-stopped
+    volumes:
+      - ./recordings:/app/recordings
+      - ./logs:/app/logs
+    ports:
+      - "8080:5000"
+    depends_on:
+      - surveillance
+    networks:
+      - surveillance-net
+
+networks:
+  surveillance-net:
+    driver: bridge

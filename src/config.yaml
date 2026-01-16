@@ -1,0 +1,58 @@
+# Camera Configuration
+cameras:
+  camera1:
+    name: "Front Door"
+    rtsp_url: "rtsp://username:password@192.168.1.100:554/stream1"
+    # Alternative URLs:
+    # - http://192.168.1.100:8080/video
+    # - 0  # for webcam
+    
+    # ROI (Region of Interest) for motion detection
+    # Format: [x1, y1, x2, y2] as percentage of frame
+    roi: [0.3, 0.4, 0.7, 0.8]  # Middle section
+    
+    # Motion detection sensitivity
+    motion_threshold: 500
+    min_motion_frames: 10
+    min_recording_time: 5  # seconds
+    cooldown_time: 30  # seconds after motion stops
+
+# Recording Settings
+recording:
+  output_dir: "./recordings"
+  video_codec: "mp4v"  # or 'X264' for H.264
+  fps: 15
+  resolution: [1280, 720]
+  max_file_size_mb: 100
+  retention_days: 30
+
+# Telegram Bot Settings
+telegram:
+  bot_token: "YOUR_BOT_TOKEN_HERE"
+  chat_id: "YOUR_CHAT_ID"
+  send_video: true
+  send_snapshot: true
+  max_video_size_mb: 50
+
+# Timestamp Overlay
+timestamp:
+  enabled: true
+  position: "bottom-right"  # top-left, top-right, bottom-left, bottom-right
+  font_scale: 0.7
+  color: [255, 255, 255]  # White
+  thickness: 2
+  format: "%Y-%m-%d %H:%M:%S"
+
+# Dashboard Settings
+dashboard:
+  host: "0.0.0.0"
+  port: 5000
+  auth_enabled: false
+  username: "admin"
+  password: "password"
+
+# System Settings
+system:
+  log_level: "INFO"
+  log_file: "./logs/surveillance.log"
+  temp_dir: "./temp"
